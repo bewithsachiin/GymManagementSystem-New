@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPERADMIN
+  ADMIN
+  STAFF
+  MEMBER
+}
+
+enum StaffRole {
+  GENERAL_TRAINER
+  PERSONAL_TRAINER
+  HOUSEKEEPING
+  RECEPTIONIST
+  NONE
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+model User {
+  id         Int        @id @default(autoincrement())
+  name       String
+  email      String     @unique
+  password   String
+  role       UserRole
+  staffRole  StaffRole? @default(NONE)
+  status     UserStatus @default(ACTIVE)
+
+  createdBy  Int?
+  creator    User?      @relation("UserCreatedBy", fields: [createdBy], references: [id])
+  children   User[]     @relation("UserCreatedBy")
+
+  branchId   Int?
+  branch     Branch?    @relation("BranchUsers", fields: [branchId], references: [id])
+
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  adminBranches Branch[] @relation("AdminBranches")
+}
+
+model Branch {
+  id        Int      @id @default(autoincrement())
+  name      String
+  address   String
+  adminId   Int
+  admin     User     @relation("AdminBranches", fields: [adminId], references: [id])
+
+  users     User[]   @relation("BranchUsers")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
