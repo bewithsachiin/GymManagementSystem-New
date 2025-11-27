@@ -44,4 +44,4 @@ export const authorizeStaffRoles = (...allowedStaffRoles) => {
 
     next();
   };
-};
+};        
