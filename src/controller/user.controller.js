@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { prisma } from '../config/prisma.js';
+import { prisma } from '../config/prisma.config.js';
 
 // helper: check branch belongs to logged admin
 const checkBranchOwnership = async (adminId, branchId) => {

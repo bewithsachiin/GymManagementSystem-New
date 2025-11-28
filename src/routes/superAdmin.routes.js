@@ -1,22 +1,36 @@
-import { Router } from 'express';
-import { authenticate, authorizeRoles } from '../middleware/auth.middleware.js';
-import { createAdmin, listAdmins } from '../controller/superaAdmin.controller.js';
+import { Router } from "express";
+import {
+  authenticate,
+  authorizeRoles,
+} from "../middleware/auth.middleware.js";
+import {
+  createPlan,
+  listAdmins,
+  updateAdminStatus,
+  getRequests,
+  approveRequest,
+  rejectRequest,
+  createAdmin,
+} from "../controller/superaAdmin.controller.js";
+
 
 const router = Router();
 
-// only SUPERADMIN
-router.post(
-  '/admins',
-  authenticate,
-  authorizeRoles('SUPERADMIN'),
-  createAdmin
-);
+// all routes require SUPERADMIN
+router.use(authenticate, authorizeRoles("SUPERADMIN"));
 
-router.get(
-  '/admins',
-  authenticate,
-  authorizeRoles('SUPERADMIN'),
-  listAdmins
-);
+// SaaS plans
+router.post("/plans", createPlan);
+
+// Admin management
+router.get("/admins", listAdmins);
+router.patch("/admins/status/:id", updateAdminStatus);
+router.post("/admins", createAdmin);
+
+
+// Plan requests
+router.get("/requests", getRequests);
+router.patch("/requests/approve/:id", approveRequest);
+router.patch("/requests/reject/:id", rejectRequest);
 
 export default router;

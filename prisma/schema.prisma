@@ -28,6 +28,13 @@ enum UserStatus {
   BLOCKED
 }
 
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+
 model User {
   id         Int        @id @default(autoincrement())
   name       String
@@ -37,7 +44,16 @@ model User {
   staffRole  StaffRole? @default(NONE)
   status     UserStatus @default(ACTIVE)
 
+  // flag for first time login
+  isPasswordChanged Boolean @default(false)
+
+  // SaaS plan for Admin
+  planId       Int?
+  plan         SaaSPlan? @relation(fields: [planId], references: [id])
+  planExpireAt DateTime?
+
   createdBy  Int?
+
   creator    User?      @relation("UserCreatedBy", fields: [createdBy], references: [id])
   children   User[]     @relation("UserCreatedBy")
 
@@ -61,4 +77,34 @@ model Branch {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model SaaSPlan {
+  id           Int          @id @default(autoincrement())
+  name         String
+  description  String?
+  price        Float
+  durationDays Int
+  features     Json         // e.g. ["BRANCH_LIMIT_3", "MODULE_ATTENDANCE"]
+
+  users    User[]
+  requests PlanRequest[]
+
+  createdAt DateTime @default(now())
+}
+
+model PlanRequest {
+  id         Int           @id @default(autoincrement())
+  ownerName  String
+  ownerEmail String
+  phone      String
+  gymName    String
+  location   String
+
+  planId Int
+  plan   SaaSPlan       @relation(fields: [planId], references: [id])
+
+  status    RequestStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }

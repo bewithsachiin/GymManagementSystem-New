@@ -13,8 +13,7 @@ export const authenticate = (req, res, next) => {
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    // decoded: { id, role, staffRole, branchId, status }
-    req.user = decoded;
+    req.user = decoded; // { id, role, status, planId, ... }
     next();
   } catch (error) {
     console.error('Auth middleware error', error);
@@ -33,15 +32,3 @@ export const authorizeRoles = (...allowedRoles) => {
     next();
   };
 };
-
-export const authorizeStaffRoles = (...allowedStaffRoles) => {
-  return (req, res, next) => {
-    const { role, staffRole } = req.user || {};
-
-    if (role !== 'STAFF' || !allowedStaffRoles.includes(staffRole)) {
-      return res.status(403).json({ message: 'Forbidden: staff role not allowed' });
-    }
-
-    next();
-  };
-};        

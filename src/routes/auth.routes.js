@@ -1,12 +1,11 @@
 import { Router } from 'express';
-import { debugRegister, login } from '../controller/auth.controller.js';
+import { login, changePassword } from '../controller/auth.controller.js';
+import { authenticate } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
-// only for testing / dev
-router.post('/debug-register', debugRegister);
-
-// main login
 router.post('/login', login);
+
+router.post('/change-password', authenticate, changePassword);
 
 export default router;

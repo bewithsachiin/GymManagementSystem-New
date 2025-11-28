@@ -1,4 +1,4 @@
-import { prisma } from '../config/prisma.js';
+import { prisma } from '../config/prisma.config.js';
 
 // Admin creates Branch
 export const createBranch = async (req, res) => {
