@@ -7,6 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/* ==================== ENUMS ==================== */
+
 enum UserRole {
   SUPERADMIN
   ADMIN
@@ -28,83 +30,747 @@ enum UserStatus {
   BLOCKED
 }
 
+enum MembershipStatus {
+  ACTIVE
+  EXPIRED
+  FROZEN
+  PENDING
+}
+
 enum RequestStatus {
   PENDING
   APPROVED
   REJECTED
 }
 
+enum PaymentGateway {
+  STRIPE
+  RAZORPAY
+  PAYPAL
+}
+
+enum AlertType {
+  DANGER
+  WARNING
+  SUCCESS
+  INFO
+}
+
+enum AlertPriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum ClassStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum BranchStatus {
+  ACTIVE
+  INACTIVE
+}
+
+/* ==================== MODELS ==================== */
 
 model User {
-  id         Int        @id @default(autoincrement())
-  name       String
-  email      String     @unique
-  password   String
-  role       UserRole
-  staffRole  StaffRole? @default(NONE)
-  status     UserStatus @default(ACTIVE)
+  id               Int              @id @default(autoincrement())
+  name             String
+  email            String           @unique
+  password         String
+  role             UserRole
+  staffRole        StaffRole?       @default(NONE)
+  status           UserStatus       @default(ACTIVE)
 
-  // flag for first time login
-  isPasswordChanged Boolean @default(false)
+  // Identifiers / contact
+  phone            String?          // not unique globally so branch-level duplicates can be checked in code
+  username         String?          @unique
+  adminId          String?          @unique
+  address          String?
 
-  // SaaS plan for Admin
-  planId       Int?
-  plan         SaaSPlan? @relation(fields: [planId], references: [id])
-  planExpireAt DateTime?
+  // adminRole / branding (if the user is an admin)
+  gymName          String?
+  adminRole        String?          // "Primary Admin", "Co-Admin"
+  plans            Json?            // admin-defined plans (optional)
 
-  createdBy  Int?
+  // Membership fields (aligned with controller)
+  planId           Int?             // FK to MembershipPlan when member chooses a plan
+  plan             MembershipPlan?  @relation(fields: [planId], references: [id])
+  planStartAt      DateTime?
+  planExpireAt     DateTime?
+  membershipStatus MembershipStatus @default(ACTIVE)
+  gender           String?
+  dob              DateTime?
 
-  creator    User?      @relation("UserCreatedBy", fields: [createdBy], references: [id])
-  children   User[]     @relation("UserCreatedBy")
+  // Password management
+  isPasswordChanged Boolean         @default(false)
 
-  branchId   Int?
-  branch     Branch?    @relation("BranchUsers", fields: [branchId], references: [id])
+  // User hierarchy (creator)
+  createdBy        Int?             
+  creator          User?            @relation("UserCreatedBy", fields: [createdBy], references: [id])
+  children         User[]           @relation("UserCreatedBy")
 
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  // Branch relationship (user belongs to a branch)
+  branchId         Int?
+  branch           Branch?          @relation("BranchUsers", fields: [branchId], references: [id])
 
-  adminBranches Branch[] @relation("AdminBranches")
+  // Admin branches (when user is admin of branches)
+  adminBranches    Branch[]         @relation("AdminBranches")
+
+  // Requests and approvals
+  planRequests     PlanRequest[]    @relation("PlanRequestsByUser")
+  approvedPlanRequests PlanRequest[] @relation("PlanRequestApprovedBy") // PlanRequests approved by this user (admin)
+
+  // Dashboard relations
+  checkIns         CheckIn[]
+  payments         Payment[]
+  alerts           Alert[]          @relation("UserAlerts")
+
+  // Settings
+  accountSettings  AccountSettings?
+  gstSettings      GstSettings?
+  paymentSettings  PaymentSettings?
+
+  // Activities & created plans
+  adminActivities  AdminActivity[]
+  createdPlans     MembershipPlan[]  @relation("CreatedPlans")
+
+  // GymPlan relations
+  createdGymPlans  GymPlan[]         @relation("GymPlanAdmin")
+  bookingRequests  BookingRequest[]  @relation("BookingRequestMember")
+
+  // Class relations
+  classBookings    Class[]           @relation("ClassMembers")
+  adminClasses     Class[]           @relation("ClassAdmin")
+
+  // Session relations
+  adminSessions    Session[]          @relation("SessionAdmin")
+
+  // Staff relations
+  adminStaff       Staff[]            @relation("StaffAdmin")
+
+  // Shift relations
+  shifts           Shift[]            @relation("ShiftAdmin")
+
+  // StaffAttendance relations
+  staffAttendances StaffAttendance[]  @relation("StaffAttendanceUser")
+
+  // Personal Training relations
+  ptBookingsAsTrainer PersonalTrainingBooking[] @relation("TrainerPT")
+  ptBookingsAsMember  PersonalTrainingBooking[] @relation("MemberPT")
+
+  // Role relations
+  roleAssignments UserRoleAssignment[]
+
+  // Timestamps
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([role])
+  @@index([status])
+  @@index([branchId])
+  @@index([createdBy])
 }
 
 model Branch {
-  id        Int      @id @default(autoincrement())
-  name      String
-  address   String
-  adminId   Int
-  admin     User     @relation("AdminBranches", fields: [adminId], references: [id])
+  id          Int          @id @default(autoincrement())
+  name        String
+  address     String
+  phone       String
+  email       String?
+  status      BranchStatus @default(ACTIVE)
 
-  users     User[]   @relation("BranchUsers")
+  // Branding settings
+  logo        String?
+  gymTimings  String?
+  themeColor  String?      @default("#6EB2CC")
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  website     String?
+  description String?
+
+  // Admin who manages this branch
+  adminId     Int
+  admin       User     @relation("AdminBranches", fields: [adminId], references: [id])
+
+  // Users belonging to this branch
+  users       User[]   @relation("BranchUsers")
+
+  // Trainers and classes
+  trainers    Trainer[]
+  classes     Class[]
+
+  // Dashboard relationships
+  checkIns    CheckIn[]
+  payments    Payment[]
+  revenueData DailyRevenue[]
+  alerts      Alert[]  @relation("BranchAlerts")
+  kpiSnapshots KPISnapshot[]
+
+  // GymPlan relations
+  gymPlans    GymPlan[]
+
+  // Session relations
+  branchSessions Session[] @relation("SessionBranch")
+
+  // Shift relations
+  shifts      Shift[] @relation("ShiftBranch")
+
+  // StaffAttendance relations
+  staffAttendances StaffAttendance[] @relation("StaffAttendanceBranch")
+
+  // Personal Training relations
+  ptBookings PersonalTrainingBooking[]
+
+  // Staff relations
+  staff       Staff[] @relation("StaffBranch")
+
+  // Role relations
+  roles       Role[] @relation("RoleBranch")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([adminId])
 }
 
-model SaaSPlan {
-  id           Int          @id @default(autoincrement())
-  name         String
-  description  String?
-  price        Float
-  durationDays Int
-  features     Json         // e.g. ["BRANCH_LIMIT_3", "MODULE_ATTENDANCE"]
+model Trainer {
+  id          Int      @id @default(autoincrement())
+  name        String
+  branchId    Int?
+  branch      Branch?  @relation(fields: [branchId], references: [id])
 
-  users    User[]
-  requests PlanRequest[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  createdAt DateTime @default(now())
+  @@index([branchId])
+}
+
+model Staff {
+  id            Int        @id @default(autoincrement())
+  staffCode     String     @unique
+  firstName     String
+  lastName      String
+  gender        String
+  dob           DateTime
+  email         String      @unique
+  phone         String
+  profilePhoto  String?
+
+  status        String      @default("ACTIVE") // ACTIVE | INACTIVE
+  role          StaffRole
+  roleId        Int?
+  staffRole     Role?      @relation(fields: [roleId], references: [id])
+  branchId      Int
+  branch        Branch      @relation("StaffBranch", fields: [branchId], references: [id])
+
+  joinDate      DateTime
+  exitDate      DateTime?
+
+  salaryType    String      @default("FIXED") // FIXED only for now
+  fixedSalary   Float
+
+  loginEnabled  Boolean     @default(false)
+  username      String?     @unique
+  password      String?
+
+
+  salarySlips   StaffSalary[]
+
+  adminId       Int
+  admin         User        @relation("StaffAdmin", fields: [adminId], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Class {
+  id           Int       @id @default(autoincrement())
+  className    String
+  trainerName  String
+  date         DateTime
+  time         String
+  scheduleDay  String
+  status       ClassStatus @default(ACTIVE)
+
+  adminId      Int
+  admin        User      @relation("ClassAdmin", fields: [adminId], references: [id])
+
+  branchId     Int
+  branch       Branch    @relation(fields: [branchId], references: [id])
+
+  members      User[]    @relation("ClassMembers")
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([adminId])
+  @@index([branchId])
+  @@index([date])
+  @@index([status])
+}
+
+model GymPlan {
+  id          Int      @id @default(autoincrement())
+  adminId     Int
+  branchId    Int
+  name        String
+  type        String    // GROUP or PERSONAL
+  sessions    Int
+  validity    Int       // days
+  price       Int
+  active      Boolean   @default(true)
+
+  admin       User      @relation("GymPlanAdmin", fields: [adminId], references: [id])
+  branch      Branch    @relation(fields: [branchId], references: [id])
+  requests    BookingRequest[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model BookingRequest {
+  id          Int      @id @default(autoincrement())
+  memberId    Int
+  planId      Int       // GymPlan
+  status      String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  sessionsUsed Int      @default(0)
+
+  member      User      @relation("BookingRequestMember", fields: [memberId], references: [id])
+  plan        GymPlan   @relation(fields: [planId], references: [id])
+
+  createdAt   DateTime @default(now())
+}
+
+model Session {
+  id          Int       @id @default(autoincrement())
+  sessionName String
+  trainer     String
+  description String
+  date        DateTime
+  time        String
+  duration    Int
+  status      String     @default("Upcoming") // Upcoming | Completed | Cancelled
+
+  adminId     Int
+  admin       User       @relation("SessionAdmin", fields: [adminId], references: [id])
+
+  branchId    Int
+  branch      Branch     @relation("SessionBranch", fields: [branchId], references: [id])
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([adminId])
+  @@index([branchId])
+}
+
+model Shift {
+  id         Int      @id @default(autoincrement())
+  key        String   @unique            // e.g., "MORNING", "DAY", "EVENING" or custom
+  name       String
+  startTime  String   // "06:00" (HH:mm) — local time (Asia/Kolkata)
+  endTime    String   // "14:00"
+  graceMins  Int      @default(15)       // grace period for late arrival
+  adminId    Int
+  admin      User     @relation("ShiftAdmin", fields: [adminId], references: [id])
+  branchId   Int
+  branch     Branch   @relation("ShiftBranch", fields: [branchId], references: [id])
+
+  // StaffAttendance relations
+  attendances StaffAttendance[]
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([adminId])
+  @@index([branchId])
+}
+
+model PersonalTrainingBooking {
+  id             Int      @id @default(autoincrement())
+  trainerId      Int?
+  trainer        User?    @relation("TrainerPT", fields: [trainerId], references: [id])
+
+  memberId       Int
+  member         User     @relation("MemberPT", fields: [memberId], references: [id])
+
+  branchId       Int
+  branch         Branch   @relation(fields: [branchId], references: [id])
+
+  type           String        // Strength training, HIIT etc.
+  date           DateTime
+  startTime      String
+  endTime        String
+
+  price          Float
+  paymentStatus  String        // Paid, Pending
+  bookingStatus  String        // Booked, Confirmed, Cancelled
+
+  totalMembers   Int       @default(1)
+
+  // Optional fields matching UI
+  trainerName    String?
+  memberName     String?
+  memberEmail    String?
+  memberPhone    String?
+  memberJoinDate DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Role {
+  id          Int                 @id @default(autoincrement())
+  name        String              @unique
+  description String?
+  status      String              @default("Active") // Active | Inactive
+  // optional: scope by branch (if role is branch-specific)
+  branchId    Int?
+  branch      Branch?             @relation("RoleBranch", fields: [branchId], references: [id])
+
+  // permissions relation
+  permissions RolePermission[]
+
+  // users assigned to this role (many-to-many via RoleAssignment)
+  assignments UserRoleAssignment[]
+
+  // staff relation
+  staff       Staff[]
+
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([status])
+  @@index([branchId])
+}
+
+model Permission {
+  id          Int                 @id @default(autoincrement())
+  key         String              @unique     // e.g. "manage_users", "view_reports"
+  label       String              // UI label like "Manage Users"
+  description String?
+
+  roles       RolePermission[]
+
+  createdAt   DateTime            @default(now())
+}
+
+model RolePermission {
+  id           Int      @id @default(autoincrement())
+  roleId       Int
+  permissionId Int
+
+  role         Role     @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+model UserRoleAssignment {
+  id        Int    @id @default(autoincrement())
+  userId    Int
+  roleId    Int
+
+  user      User   @relation(fields: [userId], references: [id])
+  role      Role   @relation(fields: [roleId], references: [id])
+
+  assignedAt DateTime @default(now())
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+}
+
+/* ==================== DASHBOARD ANALYTICS MODELS ==================== */
+
+model DailyRevenue {
+  id          Int      @id @default(autoincrement())
+  date        DateTime
+  revenue     Float
+  target      Float
+  branchId    Int
+  branch      Branch   @relation(fields: [branchId], references: [id])
+
+  membershipRevenue Float?
+  ptRevenue         Float?
+  otherRevenue      Float?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([date])
+  @@index([branchId])
+  @@unique([date, branchId])
+}
+
+model CheckIn {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id])
+  branchId     Int
+  branch       Branch   @relation(fields: [branchId], references: [id])
+  checkInTime  DateTime @default(now())
+  checkOutTime DateTime?
+
+  sessionType  String?
+  duration     Int?
+
+  @@index([userId])
+  @@index([branchId])
+  @@index([checkInTime])
+}
+
+model Payment {
+  id            Int           @id @default(autoincrement())
+  userId        Int
+  user          User          @relation(fields: [userId], references: [id])
+  branchId      Int
+  branch        Branch        @relation(fields: [branchId], references: [id])
+
+  amount        Float
+  currency      String        @default("INR")
+  paymentType   String        // "MEMBERSHIP", "PT", "RENEWAL", "OTHER"
+  status        String        @default("COMPLETED") // "PENDING", "COMPLETED", "FAILED", "REFUNDED"
+
+  gateway       PaymentGateway?
+  gatewayId     String?
+  gatewayData   Json?
+
+  invoiceNumber String?
+  dueDate       DateTime?
+  paidAt        DateTime?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([branchId])
+  @@index([paymentType])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Alert {
+  id          Int           @id @default(autoincrement())
+  type        AlertType
+  priority    AlertPriority @default(MEDIUM)
+  title       String
+  description String
+
+  userId      Int?
+  user        User?         @relation("UserAlerts", fields: [userId], references: [id])
+  branchId    Int?
+  branch      Branch?       @relation("BranchAlerts", fields: [branchId], references: [id])
+
+  isRead      Boolean       @default(false)
+  actionUrl   String?
+  expiresAt   DateTime?
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([type])
+  @@index([priority])
+  @@index([isRead])
+  @@index([userId])
+  @@index([branchId])
+  @@index([createdAt])
+}
+
+model KPISnapshot {
+  id          Int      @id @default(autoincrement())
+  date        DateTime
+  period      String   // "DAILY", "WEEKLY", "MONTHLY"
+
+  totalRevenue       Float
+  newMembers         Int
+  activeMembers      Int
+  totalCheckIns      Int
+  ptRevenue          Float
+  overdueAmount      Float
+
+  revenueGrowth      Float
+  newMembersGrowth   Float
+  activeMembersGrowth Float
+  checkInsGrowth     Float
+  ptRevenueGrowth    Float
+  overdueGrowth      Float
+
+  branchId    Int?
+  branch      Branch? @relation(fields: [branchId], references: [id])
+
+  @@map("kpi_snapshots")
+
+  createdAt   DateTime @default(now())
+
+  @@index([date])
+  @@index([period])
+  @@index([branchId])
+  @@unique([date, period, branchId])
+}
+
+model MembershipPlan {
+  id            Int       @id @default(autoincrement())
+  planName      String
+  basePrice     Float
+  billingCycle  String     // Monthly | Yearly
+  status        String     // Active | Inactive
+  descriptions  Json
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  // Creator relation
+  creatorId     Int
+  creator       User      @relation("CreatedPlans", fields: [creatorId], references: [id])
+
+  // Visitor requests
+  requests      PlanRequest[]
+
+  // Members who have this plan
+  users         User[]
 }
 
 model PlanRequest {
-  id         Int           @id @default(autoincrement())
-  ownerName  String
-  ownerEmail String
-  phone      String
-  gymName    String
-  location   String
+  id              Int       @id @default(autoincrement())
+  visitorName     String
+  email           String
+  phone           String?
+  gymName         String?
+  address         String?
+  status          RequestStatus @default(PENDING)
 
-  planId Int
-  plan   SaaSPlan       @relation(fields: [planId], references: [id])
+  planId          Int
+  plan            MembershipPlan @relation(fields: [planId], references: [id])
 
-  status    RequestStatus @default(PENDING)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  approvedBy      Int?
+  approvedByUser  User?          @relation("PlanRequestApprovedBy", fields: [approvedBy], references: [id])
+  approvedAt      DateTime?
+  rejectionReason String?
+
+  createdAt       DateTime @default(now())
+
+  // User who made the request (optional link to an existing user)
+  userId          Int?
+  user            User?    @relation("PlanRequestsByUser", fields: [userId], references: [id])
+
+  // Admin activities for this request
+  adminActivities AdminActivity[] 
+
+  @@index([status])
+  @@index([planId])
+}
+
+model AccountSettings {
+  id          Int      @id @default(autoincrement())
+  adminName   String?
+  email       String?
+  phone       String?
+  timezone    String?  @default("Asia/Kolkata")
+  language    String?  @default("en")
+  dateFormat  String?  @default("DD/MM/YYYY")
+  userId      Int      @unique
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model GstSettings {
+  id             Int      @id @default(autoincrement())
+  gstNumber      String?
+  gstPercentage  Float?
+  isGstEnabled   Boolean  @default(false)
+  businessName   String?
+  businessAddress String?
+  userId         Int      @unique
+  user           User     @relation(fields: [userId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([gstNumber])
+}
+
+model PaymentSettings {
+  id              Int      @id @default(autoincrement())
+  stripeApiKey    String?
+  razorpayKeyId   String?
+  razorpaySecret  String?
+  paypalClientId  String?
+  defaultGateway  PaymentGateway? @default(RAZORPAY)
+  isTestMode      Boolean @default(true)
+  currency        String  @default("INR")
+  userId          Int      @unique
+  user            User     @relation(fields: [userId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model AdminActivity {
+  id            Int      @id @default(autoincrement())
+  adminId       Int
+  admin         User     @relation(fields: [adminId], references: [id])
+  action        String
+  description   String?
+  ipAddress     String?
+  userAgent     String?
+  planRequestId Int?
+  planRequest   PlanRequest? @relation(fields: [planRequestId], references: [id])
+  settingsType  String?
+  createdAt     DateTime @default(now())
+
+  @@index([adminId])
+  @@index([createdAt])
+  @@index([planRequestId])
+}
+
+model StaffAttendance {
+  id            Int      @id @default(autoincrement())
+  staffId       Int
+  staff         User     @relation("StaffAttendanceUser", fields: [staffId], references: [id])
+  branchId      Int
+  branch        Branch   @relation("StaffAttendanceBranch", fields: [branchId], references: [id])
+  shiftId       Int?
+  shift         Shift?   @relation(fields: [shiftId], references: [id])
+  date          DateTime // date portion (representing the day)
+  checkinAt     DateTime?
+  checkoutAt    DateTime?
+  mode          String   // "QR" | "Manual" | etc.
+  status        String   // "Present" | "Late" | "Absent" | "Overtime"
+  notes         String?
+  createdBy     Int?     // who recorded
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([staffId])
+  @@index([branchId])
+  @@index([date])
+}
+
+model StaffSalary {
+  id           Int      @id @default(autoincrement())
+  staffId      Int
+  staff        Staff    @relation(fields: [staffId], references: [id])
+
+  month        Int
+  year         Int
+  presentDays  Int
+  halfDays     Int
+  absentDays   Int
+  totalSalary  Float
+  generatedAt  DateTime @default(now())
+
+  @@unique([staffId, month, year])
+}
+
+model SystemSettings {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String
+  description String?
+  category    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
 }

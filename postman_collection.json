@@ -1,0 +1,1917 @@
+{
+  "info": {
+    "name": "Gym Backend API - SuperAdmin Collection",
+    "description": "Complete Postman collection for all routes accessible by SUPERADMIN role",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login as SuperAdmin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"superadmin@example.com\",\n  \"password\": \"superadmin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('authToken', response.token);",
+                  "    console.log('Token saved:', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"superadmin123\",\n  \"newPassword\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "change-password"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "SuperAdmin Management",
+      "item": [
+        {
+          "name": "Create Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Admin\",\n  \"email\": \"newadmin@example.com\",\n  \"password\": \"admin123\",\n  \"phone\": \"+91 9876543210\",\n  \"gymName\": \"New Gym\",\n  \"adminRole\": \"Primary Admin\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/superadmin/admins",
+              "host": ["{{baseUrl}}"],
+              "path": ["superadmin", "admins"]
+            }
+          }
+        },
+        {
+          "name": "List All Admins",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/superadmin/admins",
+              "host": ["{{baseUrl}}"],
+              "path": ["superadmin", "admins"]
+            }
+          }
+        },
+        {
+          "name": "Get Admin by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/superadmin/admins/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["superadmin", "admins", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Admin",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Admin Name\",\n  \"phone\": \"+91 9876543211\",\n  \"gymName\": \"Updated Gym Name\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/superadmin/admins/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["superadmin", "admins", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Admin Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"INACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/superadmin/admins/:id/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["superadmin", "admins", ":id", "status"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Admin",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/superadmin/admins/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["superadmin", "admins", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Branch Management",
+      "item": [
+        {
+          "name": "Create Branch",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Branch\",\n  \"address\": \"123 New St, City\",\n  \"phone\": \"+91 9876543210\",\n  \"email\": \"newbranch@example.com\",\n  \"logo\": \"logo_url\",\n  \"gymTimings\": \"6AM-10PM\",\n  \"themeColor\": \"#6EB2CC\",\n  \"website\": \"https://newbranch.com\",\n  \"description\": \"New gym branch\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/branches",
+              "host": ["{{baseUrl}}"],
+              "path": ["branches"]
+            }
+          }
+        },
+        {
+          "name": "List My Branches",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/branches",
+              "host": ["{{baseUrl}}"],
+              "path": ["branches"]
+            }
+          }
+        },
+        {
+          "name": "Get Branch by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/branches/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["branches", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Branch",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Branch Name\",\n  \"address\": \"456 Updated St, City\",\n  \"phone\": \"+91 9876543211\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/branches/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["branches", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Branch",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/branches/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["branches", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Member Management",
+      "item": [
+        {
+          "name": "List Members",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/members",
+              "host": ["{{baseUrl}}"],
+              "path": ["members"]
+            }
+          }
+        },
+        {
+          "name": "Get Member by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/members/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Member",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Member Name\",\n  \"phone\": \"+91 9876543211\",\n  \"address\": \"Updated Address\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/members/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Member Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"INACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/members/:id/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", ":id", "status"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Assign Plan to Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/members/:id/assign-plan",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", ":id", "assign-plan"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remove Plan from Member",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/members/:id/remove-plan",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", ":id", "remove-plan"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Member Check-ins",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/members/:id/check-ins",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", ":id", "check-ins"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check-in Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionType\": \"GYM\",\n  \"duration\": 120\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/members/:id/check-in",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", ":id", "check-in"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Member Payments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/members/:id/payments",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", ":id", "payments"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Member Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 999,\n  \"paymentType\": \"MEMBERSHIP\",\n  \"gateway\": \"RAZORPAY\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/members/:id/payment",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", ":id", "payment"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Member Alerts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/members/:id/alerts",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", ":id", "alerts"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark Alert as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/members/:id/alerts/:alertId/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", ":id", "alerts", ":alertId", "read"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                },
+                {
+                  "key": "alertId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Member",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/members/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gym Plan Management",
+      "item": [
+        {
+          "name": "Create Gym Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Gym Plan\",\n  \"type\": \"GROUP\",\n  \"sessions\": 10,\n  \"validity\": 30,\n  \"price\": 2000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/gym-plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["gym-plans"]
+            }
+          }
+        },
+        {
+          "name": "List Gym Plans",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["gym-plans"]
+            }
+          }
+        },
+        {
+          "name": "Get Gym Plan by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-plans/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["gym-plans", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Gym Plan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Gym Plan\",\n  \"sessions\": 15,\n  \"price\": 2500\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/gym-plans/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["gym-plans", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Gym Plan",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-plans/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["gym-plans", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Gym Plan Bookings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-plans/:id/bookings",
+              "host": ["{{baseUrl}}"],
+              "path": ["gym-plans", ":id", "bookings"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Book Gym Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"memberId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/gym-plans/:id/book",
+              "host": ["{{baseUrl}}"],
+              "path": ["gym-plans", ":id", "book"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approve Booking",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-plans/:id/bookings/:bookingId/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["gym-plans", ":id", "bookings", ":bookingId", "approve"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                },
+                {
+                  "key": "bookingId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reject Booking",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-plans/:id/bookings/:bookingId/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["gym-plans", ":id", "bookings", ":bookingId", "reject"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                },
+                {
+                  "key": "bookingId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Class Management",
+      "item": [
+        {
+          "name": "Create Class",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"className\": \"New Yoga Class\",\n  \"trainerName\": \"Alex Johnson\",\n  \"date\": \"2023-12-01T10:00:00.000Z\",\n  \"time\": \"10:00 AM\",\n  \"scheduleDay\": \"Monday\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/classes",
+              "host": ["{{baseUrl}}"],
+              "path": ["classes"]
+            }
+          }
+        },
+        {
+          "name": "List Classes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/classes",
+              "host": ["{{baseUrl}}"],
+              "path": ["classes"]
+            }
+          }
+        },
+        {
+          "name": "Get Class by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/classes/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["classes", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Class",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"className\": \"Updated Yoga Class\",\n  \"time\": \"11:00 AM\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/classes/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["classes", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Class",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/classes/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["classes", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Book Class",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"memberId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/classes/:id/book",
+              "host": ["{{baseUrl}}"],
+              "path": ["classes", ":id", "book"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Class Bookings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/classes/:id/bookings",
+              "host": ["{{baseUrl}}"],
+              "path": ["classes", ":id", "bookings"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "SAAS Plan Management",
+      "item": [
+        {
+          "name": "List SAAS Plans",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/saas-plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["saas-plans"]
+            }
+          }
+        },
+        {
+          "name": "Create SAAS Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planName\": \"Premium Plan\",\n  \"basePrice\": 999,\n  \"billingCycle\": \"Yearly\",\n  \"status\": \"Active\",\n  \"descriptions\": [\"Full access\", \"Priority support\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/saas-plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["saas-plans"]
+            }
+          }
+        },
+        {
+          "name": "Get SAAS Plan by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/saas-plans/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["saas-plans", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update SAAS Plan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planName\": \"Updated Premium Plan\",\n  \"basePrice\": 1099\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/saas-plans/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["saas-plans", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete SAAS Plan",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/saas-plans/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["saas-plans", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Plan Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/saas-plans/requests",
+              "host": ["{{baseUrl}}"],
+              "path": ["saas-plans", "requests"]
+            }
+          }
+        },
+        {
+          "name": "Approve Plan Request",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/saas-plans/requests/:id/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["saas-plans", "requests", ":id", "approve"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reject Plan Request",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rejectionReason\": \"Not eligible\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/saas-plans/requests/:id/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["saas-plans", "requests", ":id", "reject"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Staff Management",
+      "item": [
+        {
+          "name": "Create Staff",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "firstName",
+                  "value": "John",
+                  "type": "text"
+                },
+                {
+                  "key": "lastName",
+                  "value": "Doe",
+                  "type": "text"
+                },
+                {
+                  "key": "gender",
+                  "value": "Male",
+                  "type": "text"
+                },
+                {
+                  "key": "dob",
+                  "value": "1990-01-01",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "john.doe@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "phone",
+                  "value": "+1234567890",
+                  "type": "text"
+                },
+                {
+                  "key": "branchId",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "role",
+                  "value": "GENERAL_TRAINER",
+                  "type": "text"
+                },
+                {
+                  "key": "joinDate",
+                  "value": "2023-01-01",
+                  "type": "text"
+                },
+                {
+                  "key": "salaryType",
+                  "value": "FIXED",
+                  "type": "text"
+                },
+                {
+                  "key": "fixedSalary",
+                  "value": "30000",
+                  "type": "text"
+                },
+                {
+                  "key": "loginEnabled",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "username",
+                  "value": "johndoe",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "password123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/staff/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["staff", "create"]
+            }
+          }
+        },
+        {
+          "name": "Get All Staff",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/staff",
+              "host": ["{{baseUrl}}"],
+              "path": ["staff"]
+            }
+          }
+        },
+        {
+          "name": "Get Staff by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/staff/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["staff", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Staff",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "firstName",
+                  "value": "John",
+                  "type": "text"
+                },
+                {
+                  "key": "lastName",
+                  "value": "Smith",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "john.smith@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "phone",
+                  "value": "+1234567890",
+                  "type": "text"
+                },
+                {
+                  "key": "branchId",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "role",
+                  "value": "GENERAL_TRAINER",
+                  "type": "text"
+                },
+                {
+                  "key": "fixedSalary",
+                  "value": "35000",
+                  "type": "text"
+                },
+                {
+                  "key": "loginEnabled",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "username",
+                  "value": "johnsmith",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "newpassword123",
+                  "type": "text"
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/staff/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["staff", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Staff",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/staff/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["staff", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attendance Management",
+      "item": [
+        {
+          "name": "Mark Attendance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"staffId\": 1,\n  \"branchId\": 1,\n  \"shiftId\": 1,\n  \"date\": \"2023-10-01T00:00:00.000Z\",\n  \"checkinAt\": \"2023-10-01T09:00:00.000Z\",\n  \"mode\": \"QR\",\n  \"status\": \"Present\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/attendance/mark",
+              "host": ["{{baseUrl}}"],
+              "path": ["attendance", "mark"]
+            }
+          }
+        },
+        {
+          "name": "Get Attendance by Staff",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/attendance/staff/:staffId?month=10&year=2023",
+              "host": ["{{baseUrl}}"],
+              "path": ["attendance", "staff", ":staffId"],
+              "query": [
+                {
+                  "key": "month",
+                  "value": "10"
+                },
+                {
+                  "key": "year",
+                  "value": "2023"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "staffId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Attendance",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"checkoutAt\": \"2023-10-01T17:00:00.000Z\",\n  \"status\": \"Present\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/attendance/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["attendance", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Salary Management",
+      "item": [
+        {
+          "name": "Generate Salary Slip",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"staffId\": 1,\n  \"month\": 10,\n  \"year\": 2023,\n  \"presentDays\": 25,\n  \"halfDays\": 2,\n  \"absentDays\": 3,\n  \"totalSalary\": 30000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/salary/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["salary", "generate"]
+            }
+          }
+        },
+        {
+          "name": "Get Salary Slips by Staff",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/salary/staff/:staffId",
+              "host": ["{{baseUrl}}"],
+              "path": ["salary", "staff", ":staffId"],
+              "variable": [
+                {
+                  "key": "staffId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shift Management",
+      "item": [
+        {
+          "name": "Create Shift",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"MORNING\",\n  \"name\": \"Morning Shift\",\n  \"startTime\": \"06:00\",\n  \"endTime\": \"14:00\",\n  \"graceMins\": 15,\n  \"branchId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shift/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["shift", "create"]
+            }
+          }
+        },
+        {
+          "name": "Get Shifts by Branch",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/shift/branch/:branchId",
+              "host": ["{{baseUrl}}"],
+              "path": ["shift", "branch", ":branchId"],
+              "variable": [
+                {
+                  "key": "branchId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Personal Training Management",
+      "item": [
+        {
+          "name": "Book Personal Training",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trainerId\": 1,\n  \"memberId\": 1,\n  \"branchId\": 1,\n  \"type\": \"Strength training\",\n  \"date\": \"2023-10-05T00:00:00.000Z\",\n  \"startTime\": \"10:00\",\n  \"endTime\": \"11:00\",\n  \"price\": 1000,\n  \"paymentStatus\": \"Paid\",\n  \"bookingStatus\": \"Confirmed\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/personal-training/book",
+              "host": ["{{baseUrl}}"],
+              "path": ["personal-training", "book"]
+            }
+          }
+        },
+        {
+          "name": "Get PT Bookings by Trainer",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/personal-training/trainer/:trainerId",
+              "host": ["{{baseUrl}}"],
+              "path": ["personal-training", "trainer", ":trainerId"],
+              "variable": [
+                {
+                  "key": "trainerId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get PT Bookings by Member",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/personal-training/member/:memberId",
+              "host": ["{{baseUrl}}"],
+              "path": ["personal-training", "member", ":memberId"],
+              "variable": [
+                {
+                  "key": "memberId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Role Management",
+      "item": [
+        {
+          "name": "Create Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Manager\",\n  \"description\": \"Branch Manager\",\n  \"branchId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/role/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["role", "create"]
+            }
+          }
+        },
+        {
+          "name": "Get Roles by Branch",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/role/branch/:branchId",
+              "host": ["{{baseUrl}}"],
+              "path": ["role", "branch", ":branchId"],
+              "variable": [
+                {
+                  "key": "branchId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Assign Role to User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 1,\n  \"roleId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/role/assign",
+              "host": ["{{baseUrl}}"],
+              "path": ["role", "assign"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

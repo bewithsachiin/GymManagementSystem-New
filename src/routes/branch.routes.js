@@ -1,22 +1,42 @@
-import { Router } from 'express';
-import { authenticate, authorizeRoles } from '../middleware/auth.middleware.js';
-import { createBranch, listMyBranches } from '../controller/branch.controller.js';
+import { Router } from "express";
+import { authenticate, authorizeRoles } from "../middleware/auth.middleware.js";
+
+import {
+  createBranch,
+  listMyBranches,
+  getBranchById,
+  updateBranch,
+  deleteBranch
+} from "../controller/branch.controller.js";
 
 const router = Router();
 
-// only ADMIN
-router.post(
-  '/',
-  authenticate,
-  authorizeRoles('ADMIN'),
-  createBranch
-);
+// All branch routes require ADMIN role
+router.use(authenticate, authorizeRoles("ADMIN"));
 
-router.get(
-  '/',
-  authenticate,
-  authorizeRoles('ADMIN'),
-  listMyBranches
-);
+/* ===========================
+   CREATE BRANCH
+=========================== */
+router.post("/", createBranch);
+
+/* ===========================
+   LIST ALL MY BRANCHES
+=========================== */
+router.get("/", listMyBranches);
+
+/* ===========================
+   GET SINGLE BRANCH (By ID)
+=========================== */
+router.get("/:id", getBranchById);
+
+/* ===========================
+   UPDATE BRANCH
+=========================== */
+router.put("/:id", updateBranch);
+
+/* ===========================
+   DELETE BRANCH
+=========================== */
+router.delete("/:id", deleteBranch);
 
 export default router;

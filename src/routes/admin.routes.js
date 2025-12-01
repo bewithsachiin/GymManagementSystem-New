@@ -1,15 +1,42 @@
+
 import { Router } from 'express';
 import { authenticate, authorizeRoles } from '../middleware/auth.middleware.js';
+import {
+  createStaff,
+  createMember,
+  listStaff,
+  listMembers
+} from '../controller/admin.controller.js';
 
 const router = Router();
 
-router.get(
-  '/dashboard',
+// only ADMIN
+router.post(
+  '/staff',
   authenticate,
-  authorizeRoles('SUPERADMIN', 'ADMIN'),
-  (req, res) => {
-    res.json({ message: 'Admin / SuperAdmin dashboard data', user: req.user });
-  }
+  authorizeRoles('ADMIN'),
+  createStaff
+);
+
+router.get(
+  '/staff',
+  authenticate,
+  authorizeRoles('ADMIN'),
+  listStaff
+);
+
+router.post(
+  '/members',
+  authenticate,
+  authorizeRoles('ADMIN'),
+  createMember
+);
+
+router.get(
+  '/members',
+  authenticate,
+  authorizeRoles('ADMIN'),
+  listMembers
 );
 
 export default router;

@@ -1,36 +1,43 @@
 import { Router } from "express";
+import { authenticate, authorizeRoles } from "../middleware/auth.middleware.js";
 import {
-  authenticate,
-  authorizeRoles,
-} from "../middleware/auth.middleware.js";
-import {
-  createPlan,
-  listAdmins,
-  updateAdminStatus,
-  getRequests,
-  approveRequest,
-  rejectRequest,
+ 
+  // Admin Management
   createAdmin,
-} from "../controller/superaAdmin.controller.js";
+  listAdmins,
+  getAdminById,
+  updateAdmin,
+  deleteAdmin,
+  updateAdminStatus,
 
+  // // Plan Requests
+  // listPlanRequests,
+  // approveRequest,
+  // rejectRequest,
+  // updateRequestStatus,
+} from "../controller/superaAdmin.controller.js";
 
 const router = Router();
 
-// all routes require SUPERADMIN
+
+
+
+/* ================= PROTECTED ROUTES ================= */
 router.use(authenticate, authorizeRoles("SUPERADMIN"));
 
-// SaaS plans
-router.post("/plans", createPlan);
 
-// Admin management
-router.get("/admins", listAdmins);
-router.patch("/admins/status/:id", updateAdminStatus);
+/* ====== ADMIN MANAGEMENT CRUD ====== */
 router.post("/admins", createAdmin);
+router.get("/admins", listAdmins);
+router.get("/admins/:id", getAdminById);
+router.put("/admins/:id", updateAdmin);
+router.delete("/admins/:id", deleteAdmin);
+router.patch("/admins/:id/status", updateAdminStatus);
 
-
-// Plan requests
-router.get("/requests", getRequests);
-router.patch("/requests/approve/:id", approveRequest);
-router.patch("/requests/reject/:id", rejectRequest);
+// /* ====== PLAN REQUEST MANAGEMENT ====== */
+// router.get("/requests", listPlanRequests);
+// router.patch("/requests/:id/approve", approveRequest);
+// router.patch("/requests/:id/reject", rejectRequest);
+// router.patch("/requests/:id/status", updateRequestStatus);
 
 export default router;
